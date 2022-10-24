@@ -25,7 +25,7 @@
 <script>
 export default {
   name: "argon-input",
-  emits: ["update:modelValue"],
+  emits: ['update:modelValue'],
   props: {
     size: {
       type: String,

@@ -24,11 +24,11 @@
                   <p class="mb-0">Enter your email and password to sign in</p>
                 </div>
                 <div class="card-body">
-                  <form @submit.prevent="submitLogin">
+                  <form @submit.prevent="submitLogin" role="form">
                     <div class="mb-3">
                       <argon-input
-                        type="email"
                         v-model="input.username"
+                        type="email"
                         placeholder="Email"
                         name="email"
                         size="lg"
@@ -36,8 +36,8 @@
                     </div>
                     <div class="mb-3">
                       <argon-input
-                        type="password"
                         v-model="input.password"
+                        type="password"
                         placeholder="Password"
                         name="password"
                         size="lg"
@@ -61,10 +61,10 @@
                 <div class="px-1 pt-0 text-center card-footer px-lg-2">
                   <p class="mx-auto mb-4 text-sm">
                     Don't have an account?
-                    <a
-                      href="javascript:;"
+                    <router-link
+                      to="/auth/signup"
                       class="text-success text-gradient font-weight-bold"
-                      >Sign up</a
+                      >Sign up</router-link
                     >
                   </p>
                 </div>
@@ -101,8 +101,7 @@
 
 <script>
 import { mapActions } from "pinia";
-import d$auth from "@/store/auth";
-import axios from "axios";
+import d$auth from "@/stores/auth";
 import Navbar from "@/examples/PageLayout/Navbar.vue";
 import ArgonInput from "@/components/ArgonInput.vue";
 import ArgonSwitch from "@/components/ArgonSwitch.vue";
@@ -119,19 +118,33 @@ export default {
   },
   data: () => ({
     input: {
+      // Input
       username: "",
       password: "",
     },
   }),
   methods: {
+    ...mapActions(d$auth, ["a$login", "a$logout", "a$setUser"]),
     async submitLogin() {
-      const { data } = await axios.post(
-        "https://be.tautan.ml/auth/login",
-        this.input
-      );
-
-      if(data.status){
-        this.$router.push("/tables");
+      try {
+        await this.a$login({ ...this.input });
+        this.$router.replace({ name: "Default" });
+      } catch (e) {
+        console.error(e);
+      }
+    },
+    async logout() {
+      try {
+        this.a$logout();
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    showUser() {
+      try {
+        this.a$setUser();
+      } catch (error) {
+        console.log(error);
       }
     },
   },

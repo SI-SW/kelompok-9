@@ -143,24 +143,25 @@
               </div>
             </div>
             <div class="card-body">
-              <form role="form" @submit.prevent="handleSubmit">
+              <form @submit.prevent="handleSubmit" role="form">
                 <argon-input
                   type="text"
                   placeholder="Name"
+                  name="name"
+                  v-model="this.input.name"
                   aria-label="Name"
-                  v-model="input.name"
                 />
                 <argon-input
                   type="email"
                   placeholder="Email"
+                  v-model="this.input.email"
                   aria-label="Email"
-                  v-model="input.email"
                 />
                 <argon-input
                   type="password"
                   placeholder="Password"
+                  v-model="this.input.password"
                   aria-label="Password"
-                  v-model="input.password"
                 />
                 <argon-checkbox checked>
                   <label class="form-check-label" for="flexCheckDefault">
@@ -181,8 +182,10 @@
                 </div>
                 <p class="text-sm mt-3 mb-0">
                   Already have an account?
-                  <a href="javascript:;" class="text-dark font-weight-bolder"
-                    >Sign in</a
+                  <router-link
+                    to="/auth/signin"
+                    class="text-dark font-weight-bolder"
+                    >Sign in</router-link
                   >
                 </p>
               </form>
@@ -196,13 +199,15 @@
 </template>
 
 <script>
-import axios from 'axios';
 import Navbar from "@/examples/PageLayout/Navbar.vue";
 import AppFooter from "@/examples/PageLayout/Footer.vue";
 import ArgonInput from "@/components/ArgonInput.vue";
 import ArgonCheckbox from "@/components/ArgonCheckbox.vue";
 import ArgonButton from "@/components/ArgonButton.vue";
 const body = document.getElementsByTagName("body")[0];
+
+import { mapActions } from "pinia";
+import d$auth from "@/stores/auth";
 
 export default {
   name: "signin",
@@ -213,25 +218,28 @@ export default {
     ArgonCheckbox,
     ArgonButton,
   },
-  data: () => ({
-    input: {
-      name: "",
-      email: "",
-      password: "",
-    },
-  }),
+  data() {
+    return {
+      //input
+      input: {
+        name: "",
+        email: "",
+        password: "",
+      },
+    };
+  },
   methods: {
+    ...mapActions(d$auth, ["a$register"]),
     async handleSubmit() {
-      const { data } = await axios.post(
-        "https://be.tautan.ml/auth/register",
-        this.input
-      );
-      
-      if(data.status){
-        this.$router.push('/signin');
+      try {
+        await this.a$register({ ...this.input });
+        this.$router.push("signin");
+      } catch (error) {
+        console.error(error);
       }
     },
   },
+
   created() {
     this.$store.state.hideConfigButton = true;
     this.$store.state.showNavbar = false;
